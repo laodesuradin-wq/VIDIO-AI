@@ -16,7 +16,7 @@ export default function App() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      alert("Tulis dulu ide videonya!");
+      alert("Tulis dulu ide karyanya!");
       return;
     }
 
@@ -62,7 +62,7 @@ export default function App() {
     }
     const link = document.createElement("a");
     link.href = videoUrl;
-    link.download = mediaType === 'image' ? "ai-generated-image.webp" : "ai-generated-video.mp4";
+    link.download = mediaType === 'image' ? "karya-gambar-ai.webp" : "karya-video-ai.mp4";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -72,14 +72,14 @@ export default function App() {
     <div className="min-h-screen bg-slate-900 text-white font-sans p-6 md:p-10 flex items-center justify-center">
       <div className="w-full max-w-3xl bg-slate-950 p-6 md:p-8 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
         <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3 mb-6">
-          <Clapperboard className="text-blue-500 w-8 h-8" /> AI Media Generator
+          <Clapperboard className="text-blue-500 w-8 h-8" /> Pembuat Visual AI
         </h2>
 
         <div className="mb-4">
           <p className="mb-2 text-slate-300 font-medium">Masukkan ide karya kamu:</p>
           <textarea
             className="w-full h-32 rounded-xl p-4 bg-slate-900 text-white border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
-            placeholder="Contoh: A majestic dragon flying over a snowy mountain, cinematic lighting, 4k..."
+            placeholder="Contoh: Seekor naga terbang di atas pegunungan bersalju, pencahayaan sinematik, resolusi 4K..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
@@ -92,10 +92,10 @@ export default function App() {
             onChange={(e) => setStyle(e.target.value)}
             className="w-full p-3.5 rounded-xl bg-slate-900 text-white border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
           >
-            <option value="none">Tidak ada (Default)</option>
-            <option value="Cinematic">Cinematic</option>
-            <option value="Cartoon">Cartoon</option>
-            <option value="Realistic">Realistic</option>
+            <option value="none">Tidak ada (Bawaan)</option>
+            <option value="Cinematic">Sinematik</option>
+            <option value="Cartoon">Kartun</option>
+            <option value="Realistic">Realistis</option>
             <option value="Anime">Anime</option>
           </select>
         </div>
@@ -115,7 +115,7 @@ export default function App() {
               Menghasilkan Karya...
             </>
           ) : (
-            'Generate'
+            'Buat Visual'
           )}
         </button>
 
@@ -134,13 +134,13 @@ export default function App() {
         </div>
 
         <div className="mt-8">
-          <h3 className="text-slate-400 font-semibold mb-3">Preview</h3>
+          <h3 className="text-slate-400 font-semibold mb-3">Pratinjau Hasil</h3>
           <div className="w-full rounded-xl border-2 border-blue-600/50 bg-black overflow-hidden relative aspect-video flex items-center justify-center">
             {videoUrl ? (
               mediaType === 'image' || videoUrl.endsWith('.webp') || videoUrl.endsWith('.jpg') || videoUrl.endsWith('.png') ? (
                 <img
                   src={videoUrl}
-                  alt="Generated Preview"
+                  alt="Pratinjau Hasil"
                   className="w-full h-full object-contain"
                 />
               ) : (
@@ -154,7 +154,7 @@ export default function App() {
                 </video>
               )
             ) : (
-              <div className="text-slate-600">Preview belum tersedia</div>
+              <div className="text-slate-600">Pratinjau belum tersedia</div>
             )}
           </div>
         </div>

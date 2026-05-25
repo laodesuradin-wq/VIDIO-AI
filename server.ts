@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import Replicate from "replicate";
 
 async function startServer() {
   const app = express();
@@ -9,7 +8,7 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Endpoint untuk generate video
+  // API Endpoint untuk generate media
   app.post("/api/generate", async (req, res) => {
     const { prompt } = req.body;
 
@@ -21,42 +20,26 @@ async function startServer() {
       const apiKey = process.env.REPLICATE_API_TOKEN;
       
       if (!apiKey) {
-        // Fallback untuk demo jika token tidak ada
-        console.log("REPLICATE_API_TOKEN tidak ditemukan, menggunakan fallback demo video.");
-        
-        // Simulasi waktu proses 4 detik
-        await new Promise(resolve => setTimeout(resolve, 4000));
-        
-        return res.json({ 
-          success: true, 
-          // Video sampel beresolusi HD untuk preview yang menarik
-          video_url: "https://www.w3schools.com/html/mov_bbb.mp4" 
-        });
+        throw new Error(
+          "REPLICATE_API_TOKEN belum dikonfigurasi. " +
+          "Tambahkan kunci Replicate pada tab Settings > Secrets untuk fitur pembuatan video, karena API Gemini saat ini tidak mendukung Text-to-Video."
+        );
       }
 
-      // Menggunakan Replicate API jika token tersedia
+      console.log(`Generating video using Replicate for prompt: "${prompt}"...`);
+      
+      const Replicate = (await import("replicate")).default;
       const replicate = new Replicate({
         auth: apiKey,
       });
 
-      console.log(`Generating video using Replicate for prompt: "${prompt}"...`);
-      console.log(`Membutuhkan waktu 1-3 menit, harap tunggu...`);
-
-      // Menggunakan model flux-2-pro sesuai instruksi
       const output = await replicate.run(
-        "black-forest-labs/flux-2-pro",
+        "minimax/video-01",
         {
-          input: {
-            prompt: prompt,
-            resolution: "1 MP",
-            aspect_ratio: "1:1",
-            output_format: "webp",
-            output_quality: 80,
-            safety_tolerance: 2
-          }
+          input: { prompt }
         }
       );
-      
+
       let mediaUrl = "";
       if (Array.isArray(output) && output.length > 0) {
         mediaUrl = typeof output[0]?.url === 'function' ? output[0].url().href : String(output[0]);
@@ -73,13 +56,23 @@ async function startServer() {
         mediaUrl = String(output);
       }
 
-      console.log("Berhasil dibuat! Output:", mediaUrl);
+      if (!mediaUrl) {
+        throw new Error("Gagal menghasilkan video dari Replicate API.");
+      }
 
-      return res.json({ success: true, video_url: mediaUrl, media_url: mediaUrl, type: 'image' });
+      console.log("Berhasil dihasilkan!");
+
+      return res.json({ success: true, media_url: mediaUrl, type: 'video' });
 
     } catch (error: any) {
-      console.error("Error generating video:", error);
-      return res.status(500).json({ success: false, error: error.message });
+      console.error("Error generating media:", error);
+      
+      let errorMessage = error.message;
+      if (errorMessage.includes("429") || errorMessage.includes("Quota exceeded") || errorMessage.includes("RESOURCE_EXHAUSTED")) {
+        errorMessage = "Kuota API Gemini Anda telah habis atau fitur pembuatan gambar belum tersedia di versi gratis (Free Tier). Anda perlu menambahkan detail tagihan (billing) di konsol Google Cloud/AI Studio Anda untuk menggunakan fitur ini.";
+      }
+
+      return res.status(500).json({ success: false, error: errorMessage });
     }
   });
 
