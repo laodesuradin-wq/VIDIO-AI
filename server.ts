@@ -34,7 +34,7 @@ async function startServer() {
       });
 
       const output = await replicate.run(
-        "minimax/video-01",
+        "alibaba/happyhorse-1.0",
         {
           input: { prompt }
         }
@@ -42,13 +42,13 @@ async function startServer() {
 
       let mediaUrl = "";
       if (Array.isArray(output) && output.length > 0) {
-        mediaUrl = typeof output[0]?.url === 'function' ? output[0].url().href : String(output[0]);
+        mediaUrl = typeof output[0]?.url === 'function' ? output[0].url().toString() : String(output[0]);
       } else if (typeof output === 'string') {
         mediaUrl = output;
       } else if (output && typeof output === 'object') {
         const anyOutput: any = output;
         if (typeof anyOutput.url === 'function') {
-           mediaUrl = anyOutput.url().href;
+           mediaUrl = anyOutput.url().toString();
         } else {
            mediaUrl = anyOutput.url || anyOutput.uri || String(output);
         }

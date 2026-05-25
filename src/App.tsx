@@ -47,9 +47,9 @@ export default function App() {
       } else {
         setStatus("Gagal: " + (data.error || "Terjadi kesalahan pada server."));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fetch Error:", error);
-      setStatus("Error: Pastikan server (Node.js) sudah dijalankan!");
+      setStatus("Error: Gagal terhubung ke API. Pastikan konfigurasi server / Vercel sudah benar.");
     } finally {
       setIsLoading(false);
     }
