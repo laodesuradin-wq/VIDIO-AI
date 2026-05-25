@@ -1,0 +1,6 @@
+{
+  "name": "AI Video Generator",
+  "description": "Aplikasi Video Generator menggunakan React dan Express. Portingan dari HTML/CSS murni menjadi aplikasi modern.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
