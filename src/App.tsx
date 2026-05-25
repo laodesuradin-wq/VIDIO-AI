@@ -11,6 +11,7 @@ export default function App() {
   const [status, setStatus] = useState("Menunggu input...");
   const [isLoading, setIsLoading] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<string>("video");
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleGenerate = async () => {
@@ -36,10 +37,11 @@ export default function App() {
       });
       const data = await response.json();
 
-      if (data.success && data.video_url) {
-        setStatus("Video berhasil dibuat!");
-        setVideoUrl(data.video_url);
-        if (videoRef.current) {
+      if (data.success && (data.video_url || data.media_url)) {
+        setStatus("Berhasil dibuat!");
+        setVideoUrl(data.media_url || data.video_url);
+        setMediaType(data.type || 'video');
+        if (data.type !== 'image' && videoRef.current) {
           videoRef.current.load();
         }
       } else {
@@ -55,12 +57,12 @@ export default function App() {
 
   const handleDownload = () => {
     if (!videoUrl) {
-      alert("Belum ada video yang siap!");
+      alert("Belum ada karya yang siap!");
       return;
     }
     const link = document.createElement("a");
     link.href = videoUrl;
-    link.download = "ai-generated-video.mp4";
+    link.download = mediaType === 'image' ? "ai-generated-image.webp" : "ai-generated-video.mp4";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -70,11 +72,11 @@ export default function App() {
     <div className="min-h-screen bg-slate-900 text-white font-sans p-6 md:p-10 flex items-center justify-center">
       <div className="w-full max-w-3xl bg-slate-950 p-6 md:p-8 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
         <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3 mb-6">
-          <Clapperboard className="text-blue-500 w-8 h-8" /> AI Video Generator
+          <Clapperboard className="text-blue-500 w-8 h-8" /> AI Media Generator
         </h2>
 
         <div className="mb-4">
-          <p className="mb-2 text-slate-300 font-medium">Masukkan ide video kamu:</p>
+          <p className="mb-2 text-slate-300 font-medium">Masukkan ide karya kamu:</p>
           <textarea
             className="w-full h-32 rounded-xl p-4 bg-slate-900 text-white border border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y"
             placeholder="Contoh: A majestic dragon flying over a snowy mountain, cinematic lighting, 4k..."
@@ -84,7 +86,7 @@ export default function App() {
         </div>
 
         <div className="mb-6">
-          <p className="mb-2 text-slate-300 font-medium">Pilih Gaya Video:</p>
+          <p className="mb-2 text-slate-300 font-medium">Pilih Gaya Visual:</p>
           <select
             value={style}
             onChange={(e) => setStyle(e.target.value)}
@@ -110,17 +112,17 @@ export default function App() {
           {isLoading ? (
             <>
               <Loader2 className="animate-spin w-5 h-5" />
-              Menghasilkan Video...
+              Menghasilkan Karya...
             </>
           ) : (
-            'Generate Video'
+            'Generate'
           )}
         </button>
 
         {isLoading && (
           <div className="mt-6 bg-slate-800 p-4 rounded-xl text-center flex items-center justify-center gap-3">
             <Loader2 className="animate-spin w-6 h-6 text-blue-500" />
-            <span className="text-slate-300">AI sedang merender videomu, mohon tunggu...</span>
+            <span className="text-slate-300">AI sedang memproses karyamu, mohon tunggu...</span>
           </div>
         )}
 
@@ -132,29 +134,37 @@ export default function App() {
         </div>
 
         <div className="mt-8">
-          <h3 className="text-slate-400 font-semibold mb-3">Preview Video</h3>
+          <h3 className="text-slate-400 font-semibold mb-3">Preview</h3>
           <div className="w-full rounded-xl border-2 border-blue-600/50 bg-black overflow-hidden relative aspect-video flex items-center justify-center">
             {videoUrl ? (
-              <video
-                ref={videoRef}
-                controls
-                className="w-full h-full object-contain"
-                src={videoUrl}
-              >
-                Browser kamu tidak mendukung tag video.
-              </video>
+              mediaType === 'image' || videoUrl.endsWith('.webp') || videoUrl.endsWith('.jpg') || videoUrl.endsWith('.png') ? (
+                <img
+                  src={videoUrl}
+                  alt="Generated Preview"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <video
+                  ref={videoRef}
+                  controls
+                  className="w-full h-full object-contain"
+                  src={videoUrl}
+                >
+                  Browser kamu tidak mendukung tag video.
+                </video>
+              )
             ) : (
-              <div className="text-slate-600">Video belum tersedia</div>
+              <div className="text-slate-600">Preview belum tersedia</div>
             )}
           </div>
         </div>
 
         {videoUrl && !isLoading && (
           <button
-            onClick={handleDownload}
-            className="w-full mt-6 bg-green-600 hover:bg-green-700 py-3.5 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 text-white shadow-lg shadow-green-900/20"
+             onClick={handleDownload}
+             className="w-full mt-6 bg-green-600 hover:bg-green-700 py-3.5 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 text-white shadow-lg shadow-green-900/20"
           >
-            <Download className="w-5 h-5" /> Download Video
+             <Download className="w-5 h-5" /> Download Hasil
           </button>
         )}
       </div>

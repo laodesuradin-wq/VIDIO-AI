@@ -42,33 +42,40 @@ async function startServer() {
       console.log(`Generating video using Replicate for prompt: "${prompt}"...`);
       console.log(`Membutuhkan waktu 1-3 menit, harap tunggu...`);
 
-      // Menggunakan model luma/ray atau minimax/video-01
+      // Menggunakan model flux-2-pro sesuai instruksi
       const output = await replicate.run(
-        "minimax/video-01",
+        "black-forest-labs/flux-2-pro",
         {
-          input: { prompt }
+          input: {
+            prompt: prompt,
+            resolution: "1 MP",
+            aspect_ratio: "1:1",
+            output_format: "webp",
+            output_quality: 80,
+            safety_tolerance: 2
+          }
         }
       );
       
-      let videoUrl = "";
+      let mediaUrl = "";
       if (Array.isArray(output) && output.length > 0) {
-        videoUrl = output[0];
+        mediaUrl = typeof output[0]?.url === 'function' ? output[0].url().href : String(output[0]);
       } else if (typeof output === 'string') {
-        videoUrl = output;
+        mediaUrl = output;
       } else if (output && typeof output === 'object') {
-        // Safe check for Replicate URL objects or wrappers
         const anyOutput: any = output;
-        videoUrl = anyOutput.url || anyOutput.uri || (Array.isArray(anyOutput) ? anyOutput[0] : String(output));
+        if (typeof anyOutput.url === 'function') {
+           mediaUrl = anyOutput.url().href;
+        } else {
+           mediaUrl = anyOutput.url || anyOutput.uri || String(output);
+        }
+      } else {
+        mediaUrl = String(output);
       }
 
-      if (!videoUrl) {
-        // @ts-ignore
-        videoUrl = typeof output !== 'undefined' ? String(output) : "";
-      }
+      console.log("Berhasil dibuat! Output:", mediaUrl);
 
-      console.log("Video berhasil dibuat!");
-
-      return res.json({ success: true, video_url: videoUrl });
+      return res.json({ success: true, video_url: mediaUrl, media_url: mediaUrl, type: 'image' });
 
     } catch (error: any) {
       console.error("Error generating video:", error);
